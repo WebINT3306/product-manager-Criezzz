@@ -56,6 +56,22 @@
   <main class="container">
     <h1>Quản lý Danh sách Sản phẩm</h1>
 
+    <section class="table-wrap" aria-label="Bảng sản phẩm">
+      <table id="product-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th id="th-name">Tên sản phẩm <span id="sort-indicator" class="sort-indicator"></span></th>
+            <th>Danh mục</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </section>
+
     <section class="form-grid" aria-label="Form thêm sản phẩm">
       <div class="field">
         <label for="input-name">Tên sản phẩm</label>
@@ -81,22 +97,6 @@
     </section>
 
     <div id="form-error" class="error" role="status" aria-live="polite"></div>
-
-    <section class="table-wrap" aria-label="Bảng sản phẩm">
-      <table id="product-table">
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th id="th-name">Tên sản phẩm <span id="sort-indicator" class="sort-indicator"></span></th>
-            <th>Danh mục</th>
-            <th>Đơn giá</th>
-            <th>Số lượng</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </section>
   </main>
 
   <script>
