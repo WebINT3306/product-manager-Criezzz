@@ -72,7 +72,7 @@
       </table>
     </section>
 
-    <section class="form-grid" aria-label="Form thêm sản phẩm">
+    <form id="product-form" class="form-grid" aria-label="Form thêm sản phẩm">
       <div class="field">
         <label for="input-name">Tên sản phẩm</label>
         <input id="input-name" type="text" placeholder="Nhập tên" />
@@ -93,8 +93,8 @@
         <input id="input-quantity" type="number" min="1" step="1" placeholder="VD: 5" />
       </div>
 
-      <button id="btn-add" type="button">Thêm sản phẩm</button>
-    </section>
+      <button id="btn-add" type="submit">Thêm sản phẩm</button>
+    </form>
 
     <div id="form-error" class="error" role="status" aria-live="polite"></div>
   </main>
@@ -115,6 +115,7 @@
       var inputPrice = document.getElementById("input-price");
       var inputQuantity = document.getElementById("input-quantity");
       var btnAdd = document.getElementById("btn-add");
+      var productForm = document.getElementById("product-form");
 
       function formatPrice(value) {
         if (!Number.isFinite(value)) {
@@ -158,7 +159,12 @@
               try {
                 var data = JSON.parse(xhr.responseText);
                 if (Array.isArray(data)) {
-                  products = data;
+                  if (products.length > 0) {
+                    // Keep rows user added before the XHR response returns.
+                    products = data.concat(products);
+                  } else {
+                    products = data;
+                  }
                   updateSortIndicator();
                   renderRows();
                 }
@@ -205,17 +211,7 @@
 
         errorBox.textContent = "";
 
-        var nextId = 1;
-        if (products.length > 0) {
-          var maxId = products.reduce(function (acc, item) {
-            var itemId = Number(item.id);
-            if (Number.isFinite(itemId) && itemId > acc) {
-              return itemId;
-            }
-            return acc;
-          }, 0);
-          nextId = maxId + 1;
-        }
+        var nextId = Date.now();
 
         products.push({
           id: nextId,
@@ -232,6 +228,13 @@
         inputPrice.value = "";
         inputQuantity.value = "";
         inputName.focus();
+      }
+
+      function handleAdd(event) {
+        if (event) {
+          event.preventDefault();
+        }
+        addProduct();
       }
 
       function toggleSortByName() {
@@ -261,7 +264,8 @@
         isAscending = !isAscending;
       }
 
-      btnAdd.addEventListener("click", addProduct);
+      btnAdd.addEventListener("click", handleAdd);
+      productForm.addEventListener("submit", handleAdd);
       nameHeader.addEventListener("click", toggleSortByName);
 
       updateSortIndicator();
