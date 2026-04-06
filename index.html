@@ -120,7 +120,7 @@
         if (!Number.isFinite(value)) {
           return "";
         }
-        return value.toLocaleString("vi-VN");
+        return String(value);
       }
 
       function updateSortIndicator() {
@@ -176,16 +176,16 @@
       }
 
       function validateProduct(name, price, quantity) {
-        if (!name || name.trim().length < 3) {
-          return "Ten san pham phai co it nhat 3 ky tu.";
+        if (!name || name.trim() === "") {
+          return "Ten san pham khong duoc rong.";
         }
 
         if (!Number.isFinite(price) || price <= 0) {
           return "Don gia phai la so duong.";
         }
 
-        if (!Number.isInteger(quantity) || quantity < 1) {
-          return "So luong phai la so nguyen >= 1.";
+        if (!Number.isFinite(quantity) || quantity < 1) {
+          return "So luong phai >= 1.";
         }
 
         return "";
@@ -193,7 +193,7 @@
 
       function addProduct() {
         var name = inputName.value.trim();
-        var category = inputCategory.value.trim() || "Khac";
+        var category = inputCategory.value.trim();
         var price = Number(inputPrice.value);
         var quantity = Number(inputQuantity.value);
 
