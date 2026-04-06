@@ -85,15 +85,15 @@
 
       <div class="field">
         <label for="input-price">Đơn giá</label>
-        <input id="input-price" type="number" min="1" step="1" placeholder="VD: 8500000" />
+        <input id="input-price" type="number" placeholder="VD: 8500000" />
       </div>
 
       <div class="field">
         <label for="input-quantity">Số lượng</label>
-        <input id="input-quantity" type="number" min="1" step="1" placeholder="VD: 5" />
+        <input id="input-quantity" type="number" placeholder="VD: 5" />
       </div>
 
-      <button id="btn-add" type="submit">Thêm sản phẩm</button>
+      <button id="btn-add" type="button">Thêm sản phẩm</button>
     </form>
 
     <div id="form-error" class="error" role="status" aria-live="polite"></div>
@@ -115,7 +115,6 @@
       var inputPrice = document.getElementById("input-price");
       var inputQuantity = document.getElementById("input-quantity");
       var btnAdd = document.getElementById("btn-add");
-      var productForm = document.getElementById("product-form");
 
       function formatPrice(value) {
         if (!Number.isFinite(value)) {
@@ -227,14 +226,6 @@
         inputCategory.value = "";
         inputPrice.value = "";
         inputQuantity.value = "";
-        inputName.focus();
-      }
-
-      function handleAdd(event) {
-        if (event) {
-          event.preventDefault();
-        }
-        addProduct();
       }
 
       function toggleSortByName() {
@@ -264,8 +255,7 @@
         isAscending = !isAscending;
       }
 
-      btnAdd.addEventListener("click", handleAdd);
-      productForm.addEventListener("submit", handleAdd);
+      btnAdd.addEventListener("click", addProduct);
       nameHeader.addEventListener("click", toggleSortByName);
 
       updateSortIndicator();
