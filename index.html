@@ -4,8 +4,269 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản lý Sản phẩm</title>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 16px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #btn-add {
+    grid-column: span 2;
+    width: fit-content;
+    padding: 6px 10px;
+  }
+
+  #product-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #product-table th,
+  #product-table td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;
+  }
+
+  #th-name {
+    cursor: pointer;
+  }
+
+  .error {
+    color: red;
+    min-height: 18px;
+    margin-bottom: 8px;
+  }
+</style>
 </head>
 <body>
+  <main class="container">
+    <h1>Quản lý Danh sách Sản phẩm</h1>
 
+    <section class="form-grid" aria-label="Form thêm sản phẩm">
+      <div class="field">
+        <label for="input-name">Tên sản phẩm</label>
+        <input id="input-name" type="text" placeholder="Nhập tên" />
+      </div>
+
+      <div class="field">
+        <label for="input-category">Danh mục</label>
+        <input id="input-category" type="text" placeholder="Nhập danh mục" />
+      </div>
+
+      <div class="field">
+        <label for="input-price">Đơn giá</label>
+        <input id="input-price" type="number" min="1" step="1" placeholder="VD: 8500000" />
+      </div>
+
+      <div class="field">
+        <label for="input-quantity">Số lượng</label>
+        <input id="input-quantity" type="number" min="1" step="1" placeholder="VD: 5" />
+      </div>
+
+      <button id="btn-add" type="button">Thêm sản phẩm</button>
+    </section>
+
+    <div id="form-error" class="error" role="status" aria-live="polite"></div>
+
+    <section class="table-wrap" aria-label="Bảng sản phẩm">
+      <table id="product-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th id="th-name">Tên sản phẩm <span id="sort-indicator" class="sort-indicator"></span></th>
+            <th>Danh mục</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var products = [];
+      var isAscending = true;
+
+      var table = document.getElementById("product-table");
+      var tbody = table.querySelector("tbody");
+      var nameHeader = document.getElementById("th-name");
+      var sortIndicator = document.getElementById("sort-indicator");
+      var errorBox = document.getElementById("form-error");
+
+      var inputName = document.getElementById("input-name");
+      var inputCategory = document.getElementById("input-category");
+      var inputPrice = document.getElementById("input-price");
+      var inputQuantity = document.getElementById("input-quantity");
+      var btnAdd = document.getElementById("btn-add");
+
+      function formatPrice(value) {
+        if (!Number.isFinite(value)) {
+          return "";
+        }
+        return value.toLocaleString("vi-VN");
+      }
+
+      function updateSortIndicator() {
+        if (isAscending) {
+          sortIndicator.textContent = "▲";
+        } else {
+          sortIndicator.textContent = "▼";
+        }
+      }
+
+      function renderRows() {
+        tbody.innerHTML = "";
+
+        for (var i = 0; i < products.length; i += 1) {
+          var product = products[i];
+          var row = document.createElement("tr");
+
+          row.innerHTML =
+            "<td>" + (i + 1) + "</td>" +
+            "<td>" + product.name + "</td>" +
+            "<td>" + product.category + "</td>" +
+            "<td>" + formatPrice(product.price) + "</td>" +
+            "<td>" + product.quantity + "</td>";
+
+          tbody.appendChild(row);
+        }
+      }
+
+      function loadProducts() {
+        var xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              try {
+                var data = JSON.parse(xhr.responseText);
+                if (Array.isArray(data)) {
+                  products = data;
+                  updateSortIndicator();
+                  renderRows();
+                }
+              } catch (error) {
+                console.error("Khong the parse products.json", error);
+              }
+            } else {
+              console.error("Khong the tai products.json");
+            }
+          }
+        };
+
+        xhr.open("GET", "products.json");
+        xhr.send();
+      }
+
+      function validateProduct(name, price, quantity) {
+        if (!name || name.trim().length < 3) {
+          return "Ten san pham phai co it nhat 3 ky tu.";
+        }
+
+        if (!Number.isFinite(price) || price <= 0) {
+          return "Don gia phai la so duong.";
+        }
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          return "So luong phai la so nguyen >= 1.";
+        }
+
+        return "";
+      }
+
+      function addProduct() {
+        var name = inputName.value.trim();
+        var category = inputCategory.value.trim() || "Khac";
+        var price = Number(inputPrice.value);
+        var quantity = Number(inputQuantity.value);
+
+        var errorMessage = validateProduct(name, price, quantity);
+        if (errorMessage) {
+          errorBox.textContent = errorMessage;
+          return;
+        }
+
+        errorBox.textContent = "";
+
+        var nextId = 1;
+        if (products.length > 0) {
+          var maxId = products.reduce(function (acc, item) {
+            var itemId = Number(item.id);
+            if (Number.isFinite(itemId) && itemId > acc) {
+              return itemId;
+            }
+            return acc;
+          }, 0);
+          nextId = maxId + 1;
+        }
+
+        products.push({
+          id: nextId,
+          name: name,
+          category: category,
+          price: price,
+          quantity: quantity
+        });
+
+        renderRows();
+
+        inputName.value = "";
+        inputCategory.value = "";
+        inputPrice.value = "";
+        inputQuantity.value = "";
+        inputName.focus();
+      }
+
+      function toggleSortByName() {
+        products.sort(function (a, b) {
+          var nameA = String(a.name).toLowerCase();
+          var nameB = String(b.name).toLowerCase();
+
+          if (nameA === nameB) {
+            return 0;
+          }
+
+          if (isAscending) {
+            if (nameA > nameB) {
+              return 1;
+            }
+            return -1;
+          }
+
+          if (nameA < nameB) {
+            return 1;
+          }
+          return -1;
+        });
+
+        updateSortIndicator();
+        renderRows();
+        isAscending = !isAscending;
+      }
+
+      btnAdd.addEventListener("click", addProduct);
+      nameHeader.addEventListener("click", toggleSortByName);
+
+      updateSortIndicator();
+      loadProducts();
+    })();
+  </script>
 </body>
 </html>
